@@ -1,3 +1,4 @@
+// initialzie
 using Registrar.Components;
 
 var builder = WebApplication.CreateBuilder(args);

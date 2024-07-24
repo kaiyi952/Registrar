@@ -1,0 +1,32 @@
+@page "/add"
+@rendermode InteractiveServer
+
+<PageTitle>AddStudents</PageTitle>
+
+<h3 class="display-6 fw-normal">Add Student</h3>
+
+<form class="form border border-1 bg-light p-5 b-5 mt-5">
+    
+    <div class="form-group b-3 ">
+        <label class="form-label " for="firstName">First Name</label>
+        <input class="form-control" type="text" id="firstName" name="firstName">
+    </div>
+    <div class="form-group b-3 mt-3">
+        <label class="form-label " for="lastName">Last Name</label>
+        <input class="form-control" type="text" id="lastName" name="lastName">
+    </div>
+    <div class="form-group b-3">
+        <label class="form-label mt-3" for="type">Student Type</label>
+        <select class="form-select">
+            <option selected>Select a student Type</option>
+            <option value="1">FullTime</option>
+            <option value="2">PartTime</option>
+            <option value="3">Coop</option>
+        </select>
+    </div>
+    <div class="mt-4">
+        <button type="button" class="btn btn-primary btn-sm me-3" onclick="location.href='/'">Add Student</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="location.href='/'">Cancel</button>
+    </div>
+    
+</form>

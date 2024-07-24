@@ -1,0 +1,59 @@
+@page "/register/{StudentId:int}"
+@using Registrar
+@using Registrar.Models
+@inject NavigationManager Navigation
+
+@code {
+    [Parameter]
+    public int StudentId { get; set; }
+
+    private Student student;
+    private List<Course> courses;
+    private bool isInvalidStudentId;
+
+    protected override void OnInitialized()
+{
+    var students = Helper.GetStudents();
+    courses = Helper.GetCourses();
+
+    student = students.FirstOrDefault(s => s.Id == StudentId);
+
+    if (student == null)
+    {
+        isInvalidStudentId = true;
+        Navigation.NavigateTo("/students");
+    }
+}
+}
+
+@if (isInvalidStudentId)
+{
+    <p>please enter a exist id <NavLink href="/">student page</NavLink>。</p>
+}
+else
+{  <h1>Register Student</h1>
+ 
+
+    <form class="border border-2 p-4">
+        <h3> @student?.FirstName @student?.LastName - @student?.Id</h3>
+    
+
+        <fieldset>
+            <p>The following courses are currently available for registration:</p>
+            @foreach (var course in courses)
+            {
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="course-@course.Code" />
+                    <label class="form-check-label" for="course-@course.Code">
+                        @course.Title
+                    </label>
+                </div>
+            }
+        </fieldset>
+
+        <div class="mt-3">
+            <NavLink class="btn btn-primary btn-sm me-3" onclick="location.href='/'">Register</NavLink>
+        <NavLink class="btn btn-secondary btn-sm" onclick="location.href='/'">Cancel</NavLink>
+        </div>
+    </form>
+}

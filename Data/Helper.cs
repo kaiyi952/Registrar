@@ -1,4 +1,6 @@
-﻿namespace Registrar;
+﻿using Registrar.Models;
+
+namespace Registrar;
 
 public class Helper
 {
@@ -68,4 +70,35 @@ public class Helper
   public static List<string> GetStudentTypes () {
     return ["Full Time", "Part Time", "Coop"];
   }
+
+  public static List<Student> GetStudents ()
+  {
+    List<Student> students = [];
+    Student student = new Student
+        {       Id = 123456,
+                FirstName = "John",
+                LastName = "Doe",
+                Type = "Full Time",
+                Courses = GetCourses() 
+            };
+            students.Add(student);
+student = new Student
+{
+                Id = 234567,
+                FirstName = "Ann",
+                LastName = "Smith",
+                Type = "Coop",
+                Courses = GetCourses() 
+            };
+            students.Add(student);
+        
+
+            return students;
+
+  }
+      public static int getId()
+        {
+            Random random = new Random();
+            return random.Next(100000, 1000000);
+        }
 }

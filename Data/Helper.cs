@@ -1,8 +1,6 @@
-﻿using Registrar.Models;
+﻿namespace Registrar;
 
-namespace Registrar;
-
-public class Helper
+public static class Helper
 {
   public static List<Course> GetCourses ()
   {
@@ -71,34 +69,46 @@ public class Helper
     return ["Full Time", "Part Time", "Coop"];
   }
 
-  public static List<Student> GetStudents ()
+  private static readonly Random random = new Random();
+  private static readonly HashSet<int> usedIds = new HashSet<int>();
+  private static List<Student>? students = null;
+  public static List<Student> GetStudents()
   {
-    List<Student> students = [];
-    Student student = new Student
-        {       Id = 123456,
-                FirstName = "John",
-                LastName = "Doe",
-                Type = "Full Time",
-                Courses = GetCourses() 
-            };
-            students.Add(student);
-student = new Student
-{
-                Id = 234567,
-                FirstName = "Ann",
-                LastName = "Smith",
-                Type = "Coop",
-                Courses = GetCourses() 
-            };
-            students.Add(student);
-        
-
-            return students;
-
+    if (students == null)
+    {
+      students = new List<Student>();
+      InitializeStudents();
+    }
+    return students;
   }
-      public static int getId()
-        {
-            Random random = new Random();
-            return random.Next(100000, 1000000);
-        }
+
+  private static void InitializeStudents()
+  {
+    AddStudent("John","Smith","Full Time");
+    AddStudent("Martha","Joes","Part Time");
+    AddStudent("Rose","Tyler","Coop");
+  }
+
+  private static void AddStudent(string firstName,string lastName,string type)
+  {
+    Student student = new Student
+    {
+      Id = GenerateUniqueId(),
+      FirstName = firstName,
+      LastName = lastName,
+      Type = type
+    };
+    students.Add(student);
+  }
+  public static int GenerateUniqueId()
+  {
+    int newId;
+    do{
+      newId = random.Next(100000,1000000);
+    }while(usedIds.Contains(newId));
+
+    usedIds.Add(newId);
+    return newId;
+  }
+
 }

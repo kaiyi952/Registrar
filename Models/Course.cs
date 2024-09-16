@@ -1,5 +1,6 @@
 ﻿namespace Registrar;
 
+// test
 public class Course
 {
   public string Code { get; set; } = "";

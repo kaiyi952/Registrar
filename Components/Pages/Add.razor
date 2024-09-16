@@ -1,32 +1,135 @@
 @page "/add"
 @rendermode InteractiveServer
+@inject IConfiguration Config
+@inject NavigationManager Navigator
 
 <PageTitle>AddStudents</PageTitle>
 
 <h3 class="display-6 fw-normal">Add Student</h3>
 
-<form class="form border border-1 bg-light p-5 b-5 mt-5">
+<EditForm class="form border border-1 bg-light p-5 b-5 mt-5"
+          Model="NewStudent"
+          FormName="AddStudentForm"
+          OnValidSubmit="() => CustomValidation()"
+          Enhance>
+
+    <DataAnnotationsValidator/>
+    <CustomValidation @ref="customValidation"/>
+    @* <ValidationSummary/> *@
     
     <div class="form-group b-3 ">
         <label class="form-label " for="firstName">First Name</label>
-        <input class="form-control" type="text" id="firstName" name="firstName">
+        <InputText @bind-Value="NewStudent.FirstName" class="form-control" type="text" id="firstName" name="firstName"/>
+        <ValidationMessage For="@(() => NewStudent.FirstName)" class="text-danger" />
     </div>
     <div class="form-group b-3 mt-3">
         <label class="form-label " for="lastName">Last Name</label>
-        <input class="form-control" type="text" id="lastName" name="lastName">
+        <InputText @bind-Value="NewStudent.LastName" class="form-control" type="text" id="lastName" name="lastName"/>
+        <ValidationMessage For="@(() => NewStudent.LastName)" class="text-danger" />
     </div>
     <div class="form-group b-3">
         <label class="form-label mt-3" for="type">Student Type</label>
-        <select class="form-select">
-            <option selected>Select a student Type</option>
+        <InputSelect @bind-Value="NewStudent.Type" class="form-select" id="type" name="type">
+            <option value="" disabled>Select a student Type</option>
             <option value="1">FullTime</option>
             <option value="2">PartTime</option>
             <option value="3">Coop</option>
-        </select>
+        </InputSelect>
+        <ValidationMessage For="@(() => NewStudent.Type)" class="text-danger" />
     </div>
     <div class="mt-4">
-        <button type="button" class="btn btn-primary btn-sm me-3" onclick="location.href='/'">Add Student</button>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="location.href='/'">Cancel</button>
+        <button type="submit" class="btn btn-primary btn-sm me-3">Add Student</button>
+        <button type="button" class="btn btn-secondary btn-sm"  @onclick="Cancel">Cancel</button>
     </div>
+
+</EditForm>
+
+@code{
     
-</form>
+    private CustomValidation? customValidation;
+    private string? connectionString;
+    private List<Student> students = [];
+    
+    private class AddStudentModel
+    {
+        [Required(ErrorMessage = "Please provide a first name")]
+        public string FirstName { get; set; } = "";
+        [Required(ErrorMessage = "Please provide a last name")]
+        public string LastName { get; set; } = "";
+        [Required(ErrorMessage = "Please select a student type")]
+        public string Type { get; set; } = "";
+    } 
+
+    [SupplyParameterFromForm]
+    private AddStudentModel NewStudent {get; set;} = new();
+
+    private async Task CustomValidation()
+    {
+        customValidation?.ClearErrors();
+        var errors = new Dictionary<string, List<string>>();
+        //是否有errors
+        if (errors.Any())
+        {
+            //如果有，显示这些errors
+            customValidation?.DisplayErrors(errors);
+        }
+        else
+        {
+            //add to database,and navigate to student page
+            await AddStudentAsync();
+            Navigator.NavigateTo("/");
+            NewStudent = new(); //clear the student
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        connectionString = Config.GetConnectionString("default");
+        // create connection to the database
+        // var conn = new MySqlConnection(connectionString);
+        students = await GetStudentsAsync();
+        Console.WriteLine(students.Count);
+    }
+    
+    private async Task<List<Student>> GetStudentsAsync()
+    {
+        try
+        {
+            using (var conn = new MySqlConnection(connectionString))
+            {
+                var sql = "SELECT * from Student";
+                var rows = await conn.QueryAsync<Student>(sql);
+                return rows.ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred: {ex.Message}");
+            return new List<Student>();
+        }
+    }
+    
+    // 创建一个方法，add student to database, 然后更新Form
+    private async Task AddStudentAsync()
+    {
+        int newId = Helper.GenerateUniqueId();
+        using (var conn = new MySqlConnection(connectionString))
+        {
+            var sql = "INSERT INTO Student(Id,FirstName, LastName,Type) VALUE(@Id,@FirstName, @LastName,@Type)";
+            //send the query to the database with the values
+            await conn.ExecuteAsync(sql, new
+            {
+                Id = newId,
+                FirstName= NewStudent.FirstName,
+                LastName = NewStudent.LastName,
+                Type = NewStudent.Type
+            });
+        }
+    }
+    
+    private void Cancel(MouseEventArgs e)
+    {
+        Console.WriteLine("Cancel clicked");
+        Navigator.NavigateTo("/");
+    }
+}

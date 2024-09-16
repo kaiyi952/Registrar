@@ -1,48 +1,65 @@
 ﻿@page "/"
-@using Registrar.Models;
+@inject NavigationManager Navigator
+@rendermode InteractiveServer
+@inject IConfiguration Config
 
-<PageTitle>Home</PageTitle>
-<div class="d-flex justify-content-between mb-3">
-    <h1>Students</h1>
-   
-        <NavLink href="@($"/add")" class="btn btn-primary btn-sm square-button fs-4">+</NavLink>
+<PageTitle>Registrar</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center">
+    <h3 class="display-6 fw-normal">Students</h3>
+    <NavLink class="btn bg-body-tertiary" href="/Add">+</NavLink>
 </div>
 
-<table class="table table-striped border border-1">
-  <thead>
-    <tr>
-     <th class="px-5">Id</th>
-      <th class="px-3">First Name</th>
-      <th class="px-3">Last Name</th>
-      <th class="px-3">Type</th>
-      <th class="px-3">Action</th>
-    </tr>
-  </thead>
-  <tbody>
-    @foreach (var student in students)
-    {
-      <tr>
-        <td class="px-5">@student.Id</td>
-        <td class="px-3">@student.FirstName  </td>
-        <td class="px-3">@student.LastName</td>
-        <td class="px-3">@student.Type</td>
-         <td><NavLink href="@($"/register/{student.Id}")" class="text-decoration-none">Register</NavLink></td>
-      </tr>
-    }
-  </tbody>
+<table class="table table-striped border border-1 mt-5">
+    <thead>
+        <tr>
+            <th>Id</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Type</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var student in students)
+        {
+            <tr>
+                <td>@student.Id</td>
+                <td>@student.FirstName</td>
+                <td>@student.LastName</td>
+                <td>@student.Type</td>
+                <td>
+                    <a href="/register/@student.Id" class="text-decoration-none">Register</a>
+                </td>
+            </tr>
+        }
+    </tbody>
 </table>
 
 @code {
-  List<Student> students = Helper.GetStudents();
+    private string? connectionString;
+    private List<Student> students = [];
+    
+    protected override async Task OnInitializedAsync()
+    {
+        connectionString = Config.GetConnectionString("default");
+        // create connection to the database
+        // var conn = new MySqlConnection(connectionString);
+        
+        students = await GetStudentsAsync();
+        Console.WriteLine(students.Count);
+    }
+    private async Task<List<Student>> GetStudentsAsync()
+    {
+        using (var conn = new MySqlConnection(connectionString))
+        {
+            // create a query, convert to a list
+            var sql = "SELECT * from Student";
+            var rows = await conn.QueryAsync<Student>(sql);
+            return rows.ToList();
+            
+        }
+    }
 }
 
-<style>
-  .square-button {
-    width: 40px;  
-    height: 40px; 
-    padding: 0;   
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-</style>    
+
